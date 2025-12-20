@@ -29,8 +29,7 @@ class TimerTranslator(context: Context) : BaseTranslator(context) {
 
         // --- CONFIG (Commented out) ---
         val finalTimeout = config.timeout ?: 5000L
-        val shouldFloat = if (finalTimeout == 0L) false else (config.isFloat ?: true)
-        builder.setEnableFloat(shouldFloat)
+        builder.setEnableFloat(config.isFloat ?: false)
         builder.setTimeout(finalTimeout)
         builder.setShowNotification(config.isShowShade ?: true)
         // ------------------------------
@@ -57,7 +56,7 @@ class TimerTranslator(context: Context) : BaseTranslator(context) {
             )
         }
 
-        builder.setSmallIslandIcon(picKey)
+        builder.setSmallIsland(picKey)
 
         actions.forEach {
             builder.addAction(it.action)

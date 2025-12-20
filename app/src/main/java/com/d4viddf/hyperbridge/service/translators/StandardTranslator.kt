@@ -35,11 +35,10 @@ class StandardTranslator(context: Context) : BaseTranslator(context) {
         val builder = HyperIslandNotification.Builder(context, "bridge_${sbn.packageName}", displayTitle)
 
         // --- CONFIGURATION ---
-        val finalTimeout = config.timeout ?: 5000L
+        val finalTimeout = config.timeout ?: 0
         // If timeout is 0, we force float to false to prevent stuck heads-up
-        val shouldFloat = if (finalTimeout == 0L) false else (config.isFloat ?: true)
 
-        builder.setEnableFloat(shouldFloat)
+        builder.setEnableFloat(config.isFloat ?: false)
         builder.setTimeout(finalTimeout)
         builder.setShowNotification(config.isShowShade ?: true)
         // ---------------------
@@ -53,6 +52,7 @@ class StandardTranslator(context: Context) : BaseTranslator(context) {
 
         // Action Logic: Move to Hint if > 1 (Optional, keeping standard behavior for now)
         builder.setBaseInfo(
+            type = 2,
             title = displayTitle,
             content = displayContent,
             pictureKey = picKey,
@@ -68,7 +68,7 @@ class StandardTranslator(context: Context) : BaseTranslator(context) {
             )
         }
 
-        builder.setSmallIslandIcon(picKey)
+        builder.setSmallIsland(picKey)
 
         actions.forEach {
             builder.addAction(it.action)
