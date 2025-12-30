@@ -25,7 +25,7 @@ class StandardTranslator(
         text: String,
         picKey: String,
         config: IslandConfig,
-        theme: HyperTheme? // [NEW] Accept Theme
+        theme: HyperTheme?
     ): HyperIslandData {
         val extras = sbn.notification.extras
         val template = extras.getString(Notification.EXTRA_TEMPLATE) ?: ""
@@ -52,12 +52,14 @@ class StandardTranslator(
         builder.setIslandFirstFloat(config.isFloat ?: false)
 
         val hiddenKey = "hidden_pixel"
+        // [UPDATED] Just return bitmap, no shaping
         builder.addPicture(resolveIcon(sbn, picKey))
         builder.addPicture(getTransparentPicture(hiddenKey))
 
-        // Actions (Auto-Reply logic enabled)
+        // [FIX] Pass Theme to Extract Actions (enables shaped action icons)
         val bridgeActions = extractBridgeActions(
-            sbn,
+            sbn = sbn,
+            theme = theme,
             hideReplies = false,
             useAppOpenForReplies = true
         )
@@ -98,13 +100,15 @@ class StandardTranslator(
                 builder.addHiddenAction(it)
             }
 
-            // Register any custom icons if we extracted them
+            // Register any custom/shaped icons if we extracted them
             bridgeActions.forEach {
                 it.actionImage?.let { pic -> builder.addPicture(pic) }
             }
         }
-        builder.setIslandConfig(highlightColor = theme?.global?.highlightColor)
 
+        // [FIX] Apply Theme Highlight Color (with App Override logic via helper)
+        val highlight = resolveColor(theme, sbn.packageName, "#FFFFFF")
+        builder.setIslandConfig(highlightColor = highlight)
 
         return HyperIslandData(builder.buildResourceBundle(), builder.buildJsonParam())
     }

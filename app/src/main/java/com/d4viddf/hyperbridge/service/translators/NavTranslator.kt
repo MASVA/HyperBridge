@@ -21,11 +21,9 @@ import io.github.d4viddf.hyperisland_kit.models.TextInfo
 
 class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(context, repo) {
 
-    private val TAG = "HyperBridgeNav"
-    private val arrivalKeywords by lazy { context.resources.getStringArray(R.array.nav_arrival_keywords).toList() }
-
     private val timeRegex = Regex("(\\d{1,2}:\\d{2})|(\\d+h\\s*\\d+m)", RegexOption.IGNORE_CASE)
     private val distanceRegex = Regex("^\\d+([,.]\\d+)?\\s*(m|km|ft|mi|yd|yards|miles|meters)", RegexOption.IGNORE_CASE)
+    private val arrivalKeywords by lazy { context.resources.getStringArray(R.array.nav_arrival_keywords).toList() }
 
     fun translate(
         sbn: StatusBarNotification,
@@ -36,10 +34,17 @@ class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(co
         theme: HyperTheme?
     ): HyperIslandData {
 
-        // [FIX] Pass sbn.packageName to resolveColor
-        val themeProgressBarColor = resolveColor(theme, sbn.packageName, "#34C759")
+        // Default to Green if not specified
+        val themeProgressBarColor = theme?.defaultNavigation?.progressBarColor
+            ?: resolveColor(theme, sbn.packageName, "#34C759")
 
-        val themeActionBgColor = "#40808080".toColorInt()
+        // [FIX] Use progress bar color as fallback for actions instead of grey
+        val themeActionBgColor = try {
+            themeProgressBarColor.toColorInt()
+        } catch (e: Exception) {
+            0xFF34C759.toInt()
+        }
+
         val themeActionPadding = 6
 
         val navStartBitmap = getThemeBitmap(theme, "nav_start")
@@ -81,7 +86,6 @@ class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(co
         if (instruction.isEmpty()) instruction = context.getString(R.string.maps_title)
 
         val builder = HyperIslandNotification.Builder(context, "bridge_${sbn.packageName}", instruction)
-
         builder.setEnableFloat(config.isFloat ?: false)
         builder.setIslandConfig(timeout = config.timeout)
         builder.setShowNotification(config.isShowShade ?: true)
@@ -97,13 +101,13 @@ class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(co
         if (navStartBitmap != null) {
             builder.addPicture(HyperPicture(navStartKey, navStartBitmap))
         } else {
-            builder.addPicture(getPictureFromResource(navStartKey, R.drawable.ic_nav_start))
+            builder.addPicture(getColoredPicture(navStartKey, R.drawable.ic_nav_start, themeProgressBarColor))
         }
 
         if (navEndBitmap != null) {
             builder.addPicture(HyperPicture(navEndKey, navEndBitmap))
         } else {
-            builder.addPicture(getPictureFromResource(navEndKey, R.drawable.ic_nav_end))
+            builder.addPicture(getColoredPicture(navEndKey, R.drawable.ic_nav_end, themeProgressBarColor))
         }
 
         val rawActions = sbn.notification.actions ?: emptyArray()
@@ -117,7 +121,12 @@ class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(co
             var hyperPic: HyperPicture? = null
 
             if (originalBitmap != null) {
-                val roundedBitmap = createRoundedIconWithBackground(originalBitmap, themeActionBgColor, themeActionPadding)
+                val roundedBitmap = if (theme != null) {
+                    applyThemeToActionIcon(originalBitmap, theme, themeActionBgColor)
+                } else {
+                    createRoundedIconWithBackground(originalBitmap, themeActionBgColor, themeActionPadding)
+                }
+
                 val picKeyAction = "${uniqueKey}_icon"
                 actionIcon = Icon.createWithBitmap(roundedBitmap)
                 hyperPic = HyperPicture(picKeyAction, roundedBitmap)
@@ -143,7 +152,7 @@ class NavTranslator(context: Context, repo: ThemeRepository) : BaseTranslator(co
         builder.setCoverInfo(picKey, instruction, finalEta, finalDistance)
 
         if (hasProgress) {
-            builder.setProgressBar(percent, themeProgressBarColor, navStartKey, navEndKey)
+            builder.setProgressBar(percent, themeProgressBarColor, picForwardKey = navStartKey, picEndKey = navEndKey)
         }
 
         fun getTextInfo(type: NavContent): TextInfo {

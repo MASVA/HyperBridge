@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.d4viddf.hyperbridge.models.theme.ActionConfig
 import com.d4viddf.hyperbridge.models.theme.AppThemeOverride
 import com.d4viddf.hyperbridge.models.theme.HyperTheme
@@ -19,7 +20,6 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 import java.util.zip.ZipInputStream
-import androidx.core.net.toUri
 
 class ThemeRepository(private val context: Context) {
 
@@ -152,14 +152,19 @@ class ThemeRepository(private val context: Context) {
 
     fun getActionConfig(packageName: String, actionKey: String): ActionConfig? {
         val theme = _activeTheme.value ?: return null
+
+        // 1. Check App Overrides
         val appActions = theme.apps[packageName]?.actions
         if (appActions != null && appActions.containsKey(actionKey)) {
             return appActions[actionKey]
         }
+
+        // 2. Check Global Defaults
         if (theme.defaultActions.containsKey(actionKey)) {
             return theme.defaultActions[actionKey]
         }
-        return theme.global.defaultActionStyle
+
+        return null
     }
 
     fun getAppOverride(packageName: String): AppThemeOverride? {
@@ -211,8 +216,6 @@ class ThemeRepository(private val context: Context) {
                         val configFile = File(themeFolder, "theme_config.json")
                         if (configFile.exists()) {
                             val content = configFile.readText()
-                            // We decode the whole object to get the ID/Meta
-                            // (In a real app, maybe cache this to avoid reading 50 files on startup)
                             val theme = json.decodeFromString<HyperTheme>(content)
                             list.add(theme)
                         }
@@ -237,7 +240,6 @@ class ThemeRepository(private val context: Context) {
             // If the deleted theme was active, reset to default
             if (_activeTheme.value?.id == themeId) {
                 _activeTheme.value = null
-                // You should also clear the preference in AppPreferences here or in ViewModel
             }
         }
     }
@@ -253,14 +255,13 @@ class ThemeRepository(private val context: Context) {
 
             // Write JSON
             val configFile = File(themeFolder, "theme_config.json")
-            val content = json.encodeToString(HyperTheme.serializer(), theme)
+            val content = json.encodeToString(theme)
             configFile.writeText(content)
         }
     }
 
     /**
      * Zips the theme folder into a .hbr file for sharing.
-     * Returns the file path of the zip.
      */
     suspend fun exportTheme(themeId: String): File? {
         return withContext(Dispatchers.IO) {

@@ -1,6 +1,8 @@
 package com.d4viddf.hyperbridge.ui.screens.theme
 
-import android.graphics.Color as AndroidColor
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,12 +23,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Brush
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Share
@@ -34,9 +37,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -45,7 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,14 +60,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.d4viddf.hyperbridge.R
 import com.d4viddf.hyperbridge.models.theme.HyperTheme
-import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,18 +78,41 @@ fun ThemeManagerScreen(
     onBack: () -> Unit,
     onFindThemes: () -> Unit,
     onCreateTheme: () -> Unit,
-    onEditTheme: (String) -> Unit // [NEW] Callback to edit specific ID
+    onEditTheme: (String) -> Unit
 ) {
     val viewModel: ThemeViewModel = viewModel()
     val installedThemes by viewModel.installedThemes.collectAsState()
     val activeId by viewModel.activeThemeId.collectAsState()
 
+    val context = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
     var showAddOptions by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
-    // Ensure list is fresh when screen opens
-    LaunchedEffect(Unit) {
-        viewModel.refreshThemes()
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val intent = Intent(context, ThemeInstallerActivity::class.java).apply {
+                data = uri
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            context.startActivity(intent)
+            showAddOptions = false
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshThemes()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -89,11 +120,13 @@ fun ThemeManagerScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.theme_manager_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = stringResource(R.string.theme_manager_cd_back)
+                    FilledTonalIconButton(
+                        onClick = onBack,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                         )
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -123,7 +156,6 @@ fun ThemeManagerScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. Default Option
             item {
                 SystemDefaultCard(
                     isActive = activeId == null,
@@ -131,7 +163,6 @@ fun ThemeManagerScreen(
                 )
             }
 
-            // 2. Custom Themes
             items(installedThemes) { theme ->
                 ThemeCard(
                     theme = theme,
@@ -139,7 +170,7 @@ fun ThemeManagerScreen(
                     onClick = { viewModel.applyTheme(theme) },
                     onDelete = { viewModel.deleteTheme(theme) },
                     onExport = { viewModel.exportAndShareTheme(theme) },
-                    onEdit = { onEditTheme(theme.id) } // [NEW] Pass ID to edit
+                    onEdit = { onEditTheme(theme.id) }
                 )
             }
         }
@@ -176,17 +207,44 @@ fun ThemeManagerScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedButton(
-                    onClick = {
-                        showAddOptions = false
-                        onFindThemes()
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(Icons.Rounded.Search, contentDescription = null)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(stringResource(R.string.theme_sheet_action_find), style = MaterialTheme.typography.titleMedium)
+                    OutlinedButton(
+                        onClick = {
+                            showAddOptions = false
+                            onFindThemes()
+                        },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Icon(Icons.Rounded.Search, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            stringResource(R.string.theme_sheet_action_find),
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+                        },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Icon(Icons.Rounded.FolderOpen, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            stringResource(R.string.theme_action_import_short),
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
@@ -200,7 +258,7 @@ fun ThemeCard(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onExport: () -> Unit,
-    onEdit: () -> Unit // [NEW] Parameter
+    onEdit: () -> Unit
 ) {
     val borderColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent
     val borderWidth = if (isActive) 2.dp else 0.dp
@@ -213,7 +271,6 @@ fun ThemeCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -234,7 +291,6 @@ fun ThemeCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info
             Text(
                 text = theme.meta.name,
                 style = MaterialTheme.typography.titleMedium,
@@ -252,13 +308,11 @@ fun ThemeCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Actions Row
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                // Edit Button
                 IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                     Icon(
                         Icons.Rounded.Edit,
-                        contentDescription = "Edit",
+                        contentDescription = stringResource(R.string.theme_card_action_edit),
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -266,11 +320,10 @@ fun ThemeCard(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                // Export Button
                 IconButton(onClick = onExport, modifier = Modifier.size(32.dp)) {
                     Icon(
                         Icons.Rounded.Share,
-                        contentDescription = "Export",
+                        contentDescription = stringResource(R.string.theme_card_action_export),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -278,7 +331,6 @@ fun ThemeCard(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                // Delete Button
                 IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                     Icon(
                         Icons.Rounded.Delete,

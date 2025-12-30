@@ -2,7 +2,6 @@ package com.d4viddf.hyperbridge.service.translators
 
 import android.app.Notification
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import androidx.core.graphics.toColorInt
 import com.d4viddf.hyperbridge.R
@@ -11,7 +10,6 @@ import com.d4viddf.hyperbridge.models.BridgeAction
 import com.d4viddf.hyperbridge.models.HyperIslandData
 import com.d4viddf.hyperbridge.models.IslandConfig
 import com.d4viddf.hyperbridge.models.theme.HyperTheme
-import io.github.d4viddf.hyperisland_kit.HyperAction
 import io.github.d4viddf.hyperisland_kit.HyperIslandNotification
 import io.github.d4viddf.hyperisland_kit.HyperPicture
 import io.github.d4viddf.hyperisland_kit.models.ImageTextInfoLeft
@@ -38,11 +36,6 @@ class CallTranslator(
         val extras = sbn.notification.extras
         val title = extras.getString(Notification.EXTRA_TITLE) ?: "Call"
 
-        // [FIX] Pass sbn.packageName to resolveColor
-        val themeHangUpColor = resolveColor(theme, sbn.packageName, "#FF3B30")
-        val themeAnswerColor = resolveColor(theme, sbn.packageName, "#34C759")
-        val themeNeutralColor = resolveColor(theme, sbn.packageName, "#8E8E93")
-
         val isChronometerShown = extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER)
         val baseTime = sbn.notification.`when`
         val now = System.currentTimeMillis()
@@ -64,14 +57,7 @@ class CallTranslator(
         builder.addPicture(resolveIcon(sbn, picKey))
         builder.addPicture(getTransparentPicture(hiddenKey))
 
-        // Get Actions with Themed Colors
-        val bridgeActions = getFilteredCallActions(
-            sbn,
-            isIncoming,
-            themeHangUpColor,
-            themeAnswerColor,
-            themeNeutralColor
-        )
+        val bridgeActions = getFilteredCallActions(sbn, isIncoming, theme)
         val actionKeys = bridgeActions.map { it.action.key }
 
         val rightText: String
@@ -102,7 +88,9 @@ class CallTranslator(
         )
 
         builder.setSmallIsland(picKey)
-        builder.setIslandConfig(highlightColor = theme?.global?.highlightColor)
+
+        val highlight = resolveColor(theme, sbn.packageName, "#FFFFFF")
+        builder.setIslandConfig(highlightColor = highlight)
 
         if (isIncoming) {
             builder.setBigIslandInfo(
@@ -140,12 +128,14 @@ class CallTranslator(
     private fun getFilteredCallActions(
         sbn: StatusBarNotification,
         isIncoming: Boolean,
-        hangUpColor: String,
-        answerColor: String,
-        neutralColor: String
+        theme: HyperTheme?
     ): List<BridgeAction> {
         val rawActions = sbn.notification.actions ?: return emptyList()
         val results = mutableListOf<BridgeAction>()
+
+        val hangUpColor = theme?.callConfig?.declineColor ?: "#FF3B30"
+        val answerColor = theme?.callConfig?.answerColor ?: "#34C759"
+        val neutralColor = "#8E8E93"
 
         var answerIndex = -1
         var hangUpIndex = -1
@@ -168,8 +158,14 @@ class CallTranslator(
         }
 
         if (indicesToShow.isEmpty()) {
-            if (rawActions.isNotEmpty()) indicesToShow.add(0)
-            if (rawActions.size > 1) indicesToShow.add(1)
+            if (rawActions.isNotEmpty()) {
+                indicesToShow.add(0)
+                hangUpIndex = 0
+            }
+            if (rawActions.size > 1) {
+                indicesToShow.add(1)
+                answerIndex = 1
+            }
         }
 
         indicesToShow.take(2).forEach { index ->
@@ -184,23 +180,28 @@ class CallTranslator(
                 isAnswer -> answerColor
                 else -> neutralColor
             }
-            // Use safe color parsing
             val bgColorInt = try { bgColorHex.toColorInt() } catch(e: Exception) { 0xFF8E8E93.toInt() }
 
             val originalIcon = action.getIcon()
             val originalBitmap = if (originalIcon != null) loadIconBitmap(originalIcon, sbn.packageName) else null
 
-            var actionIcon: Icon? = null
+            var actionIcon: android.graphics.drawable.Icon? = null
             var hyperPic: HyperPicture? = null
 
             if (originalBitmap != null) {
-                val roundedBitmap = createRoundedIconWithBackground(originalBitmap, bgColorInt, 12)
+                // Apply Shape & Padding to ACTION ICON
+                val processedBitmap = if (theme != null) {
+                    applyThemeToActionIcon(originalBitmap, theme, bgColorInt)
+                } else {
+                    createRoundedIconWithBackground(originalBitmap, bgColorInt, 12)
+                }
+
                 val picKey = "${uniqueKey}_icon"
-                actionIcon = Icon.createWithBitmap(roundedBitmap)
-                hyperPic = HyperPicture(picKey, roundedBitmap)
+                actionIcon = android.graphics.drawable.Icon.createWithBitmap(processedBitmap)
+                hyperPic = HyperPicture(picKey, processedBitmap)
             }
 
-            val hyperAction = HyperAction(
+            val hyperAction = io.github.d4viddf.hyperisland_kit.HyperAction(
                 key = uniqueKey,
                 title = action.title?.toString() ?: "",
                 icon = actionIcon,

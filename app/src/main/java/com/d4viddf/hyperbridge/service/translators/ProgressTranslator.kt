@@ -29,9 +29,13 @@ class ProgressTranslator(context: Context, repo: ThemeRepository) : BaseTranslat
         theme: HyperTheme?
     ): HyperIslandData {
 
-        // [FIX] Pass sbn.packageName to resolveColor
-        val themeProgressColor = resolveColor(theme, sbn.packageName, "#007AFF")
-        val themeFinishColor = resolveColor(theme, sbn.packageName, "#34C759")
+        // [FIX] Prioritize Progress Colors -> Global Highlight -> Default
+        val themeProgressColor = theme?.defaultProgress?.activeColor
+            ?: resolveColor(theme, sbn.packageName, "#007AFF")
+
+        val themeFinishColor = theme?.defaultProgress?.finishedColor
+            ?: resolveColor(theme, sbn.packageName, "#34C759")
+
         val customTick = getThemeBitmap(theme, "tick_icon")
 
         val builder = HyperIslandNotification.Builder(context, "bridge_${sbn.packageName}", title)
@@ -60,11 +64,13 @@ class ProgressTranslator(context: Context, repo: ThemeRepository) : BaseTranslat
             if (customTick != null) {
                 builder.addPicture(HyperPicture(tickKey, customTick))
             } else {
+                // Tint default tick with specific finish color
                 builder.addPicture(getColoredPicture(tickKey, R.drawable.rounded_check_circle_24, themeFinishColor))
             }
         }
 
-        val actions = extractBridgeActions(sbn)
+        val actions = extractBridgeActions(sbn, theme)
+
         builder.setChatInfo(
             title = title,
             content = if (isFinished) "Complete" else textContent,
@@ -94,7 +100,9 @@ class ProgressTranslator(context: Context, repo: ThemeRepository) : BaseTranslat
                 builder.setSmallIslandCircularProgress(picKey, percent, themeProgressColor, isCCW = true)
             }
         }
-        builder.setIslandConfig(highlightColor = theme?.global?.highlightColor)
+
+        val highlight = resolveColor(theme, sbn.packageName, themeProgressColor)
+        builder.setIslandConfig(highlightColor = highlight)
 
         actions.forEach { it.actionImage?.let { pic -> builder.addPicture(pic) } }
         val hyperActions = actions.map { it.action }.toTypedArray()

@@ -1,10 +1,12 @@
 package com.d4viddf.hyperbridge.ui.screens.theme
 
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +29,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,17 +62,24 @@ class ThemeInstallerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Manual Dependency Injection (Replace with Hilt if you use it)
         val repo = ThemeRepository(applicationContext)
         val prefs = AppPreferences(applicationContext)
-
-        // Get the file URI from the intent
         val dataUri: Uri? = intent?.data
 
         setContent {
-            // We use a transparent background for the activity,
-            // and show a Dialog composable on top.
-            MaterialTheme {
+            // [FIX] Detect System Theme & Use Dynamic Colors
+            val darkTheme = isSystemInDarkTheme()
+            val context = LocalContext.current
+
+            val colorScheme = when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                    if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+                }
+                darkTheme -> darkColorScheme()
+                else -> lightColorScheme()
+            }
+
+            MaterialTheme(colorScheme = colorScheme) {
                 InstallerScreen(
                     uri = dataUri,
                     repo = repo,
@@ -88,7 +102,6 @@ fun InstallerScreen(
     var installedTheme by remember { mutableStateOf<HyperTheme?>(null) }
     val scope = rememberCoroutineScope()
 
-    // Auto-start installation when the dialog opens
     LaunchedEffect(uri) {
         if (uri == null) {
             installState = InstallState.Error
@@ -98,12 +111,7 @@ fun InstallerScreen(
         installState = InstallState.Installing
 
         try {
-            // 1. Install the theme to internal storage
             val themeId = repo.installThemeFromUri(uri)
-
-            // 2. Read the metadata back to show the user
-            // (We construct a temporary file reader just to get the name/author)
-            // Ideally, repo.installThemeFromUri should return the Theme object, but this works:
             val themeFile = File(repo.getThemesDir(), "$themeId/theme_config.json")
             val json = Json { ignoreUnknownKeys = true }
             val theme = json.decodeFromString<HyperTheme>(themeFile.readText())
@@ -117,16 +125,16 @@ fun InstallerScreen(
         }
     }
 
-    // The Main Dialog
     Dialog(
         onDismissRequest = onFinish,
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = false // Force user to choose
+            dismissOnClickOutside = false
         )
     ) {
         Surface(
             shape = RoundedCornerShape(28.dp),
+            // Use surfaceContainerHigh for correct dialog contrast in M3
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 6.dp,
             modifier = Modifier.width(320.dp)
@@ -146,7 +154,6 @@ fun InstallerScreen(
                             onApply = {
                                 scope.launch {
                                     prefs.setActiveThemeId(state.themeId)
-                                    // Also notify repository to refresh memory
                                     repo.activateTheme(state.themeId)
                                     onFinish()
                                 }
@@ -194,7 +201,6 @@ private fun SuccessContent(
     onApply: () -> Unit,
     onCancel: () -> Unit
 ) {
-    // Icon Header
     Box(
         modifier = Modifier
             .size(72.dp)
@@ -211,7 +217,6 @@ private fun SuccessContent(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Title
     Text(
         text = stringResource(R.string.theme_installer_success_title),
         style = MaterialTheme.typography.headlineSmall,
@@ -221,7 +226,6 @@ private fun SuccessContent(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    // Theme Name
     Text(
         text = theme?.meta?.name ?: "Unknown Theme",
         style = MaterialTheme.typography.titleMedium,
@@ -229,7 +233,6 @@ private fun SuccessContent(
         color = MaterialTheme.colorScheme.primary
     )
 
-    // Author & Version
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(R.string.theme_installer_author, theme?.meta?.author ?: "Unknown"),
@@ -250,7 +253,6 @@ private fun SuccessContent(
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // Question
     Text(
         text = stringResource(R.string.theme_installer_apply_question),
         style = MaterialTheme.typography.bodyMedium,
@@ -260,7 +262,6 @@ private fun SuccessContent(
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // Actions
     Column(modifier = Modifier.fillMaxWidth()) {
         Button(
             onClick = onApply,
@@ -331,7 +332,6 @@ private fun ErrorContent(onClose: () -> Unit) {
     }
 }
 
-// Simple internal state for the UI logic
 sealed class InstallState {
     data object Idle : InstallState()
     data object Installing : InstallState()
@@ -339,14 +339,5 @@ sealed class InstallState {
     data object Error : InstallState()
 }
 
-// M3 Expressive Shape for the Icons
 private val RequestIconShape = RoundedCornerShape(20.dp)
 
-// Helper to access internal Dir from Repo if needed (or add a getter to ThemeRepository)
-private fun ThemeRepository.getThemesDir(): File {
-    // Reflective hack or just make 'themesDir' public in Repository
-    // For now assuming we modify ThemeRepository to have:
-    // fun getThemesDir(): File = themesDir
-    // If not, we can assume:
-    return File(this.javaClass.getDeclaredField("themesDir").apply { isAccessible = true }.get(this) as File, "")
-}

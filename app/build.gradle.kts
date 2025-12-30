@@ -17,7 +17,7 @@ android {
         minSdk = 35
         targetSdk = 36
         versionCode = 10
-        versionName = "0.4.0-dev07"
+        versionName = "0.4.0-dev08"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -74,7 +74,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation("com.google.code.gson:gson:2.13.2")
+    implementation(libs.gson)
     implementation(libs.kotlinx.serialization.json)
 }
 

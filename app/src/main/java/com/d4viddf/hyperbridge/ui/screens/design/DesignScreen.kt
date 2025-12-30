@@ -58,25 +58,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.toColorInt
 import com.d4viddf.hyperbridge.data.AppPreferences
 import com.d4viddf.hyperbridge.data.theme.ThemeRepository
 import com.d4viddf.hyperbridge.data.widget.WidgetManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import android.graphics.Color as AndroidColor
-import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DesignScreen(
     onNavigateToWidgets: () -> Unit,
-    onNavigateToThemes: () -> Unit, // [NEW] Navigation callback
+    onNavigateToThemes: () -> Unit,
     onLaunchPicker: () -> Unit
 ) {
     val context = LocalContext.current
     val preferences = remember { AppPreferences(context.applicationContext) }
 
-    // [NEW] Repo for showing active theme info
     val themeRepo = remember { ThemeRepository(context.applicationContext) }
     val activeTheme by themeRepo.activeTheme.collectAsState()
     val activeThemeId by preferences.activeThemeIdFlow.collectAsState(initial = null)
@@ -87,7 +85,6 @@ fun DesignScreen(
     val savedWidgetIds by preferences.savedWidgetIdsFlow.collectAsState(initial = emptyList())
     var widgetIcons by remember { mutableStateOf<List<Drawable>>(emptyList()) }
 
-    // [NEW] Sync Repo with Prefs to load metadata for the card
     LaunchedEffect(activeThemeId) {
         if (activeThemeId != null) {
             themeRepo.activateTheme(activeThemeId!!)
@@ -170,11 +167,12 @@ fun DesignScreen(
                 }
             )
 
-            // --- 2. NOTIFICATION THEMES CARD (Updated) ---
+            // --- 2. NOTIFICATION THEMES CARD ---
             DesignCategoryCard(
-                title = "Notification Themes",
+                title = "Themes",
                 icon = Icons.Rounded.Palette,
                 enabled = true,
+                showBetaBadge = true, // [NEW] Added Beta Badge here
                 onClick = onNavigateToThemes,
                 content = {
                     val theme = activeTheme
@@ -265,11 +263,10 @@ fun DesignScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // [NEW] Quick Theme Import Button
                 OutlinedButton(
                     onClick = {
                         showBottomSheet = false
-                        onNavigateToThemes() // Redirect to manager to find themes
+                        onNavigateToThemes()
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp)

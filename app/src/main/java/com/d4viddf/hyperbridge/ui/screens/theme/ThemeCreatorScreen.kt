@@ -1,55 +1,81 @@
 package com.d4viddf.hyperbridge.ui.screens.theme
 
-import android.graphics.Color as AndroidColor
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.Navigation
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.d4viddf.hyperbridge.R
-import com.d4viddf.hyperbridge.models.theme.ActionConfig
-import com.d4viddf.hyperbridge.models.theme.AppThemeOverride
-import com.d4viddf.hyperbridge.models.theme.ResourceType
-import com.d4viddf.hyperbridge.models.theme.ThemeResource
-import androidx.core.graphics.toColorInt
+import com.d4viddf.hyperbridge.ui.screens.theme.content.ColorsDetailContent
+import com.d4viddf.hyperbridge.ui.screens.theme.content.IconsDetailContent
+
+enum class CreatorRoute {
+    MAIN_MENU, COLORS, ICONS, CALLS, APPS
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,411 +85,370 @@ fun ThemeCreatorScreen(
     onThemeCreated: () -> Unit
 ) {
     val viewModel: ThemeViewModel = viewModel()
-    val focusManager = LocalFocusManager.current
-    val appOverrides by viewModel.appOverrides.collectAsState()
-    val installedApps by viewModel.installedApps.collectAsState()
-
-    var name by remember { mutableStateOf("") }
-    var author by remember { mutableStateOf("") }
-    var selectedColorHex by remember { mutableStateOf("#3DDA82") }
-    var isError by remember { mutableStateOf(false) }
-
-    var showAppPicker by remember { mutableStateOf(false) }
-    var editingPkg by remember { mutableStateOf<String?>(null) }
+    var currentRoute by remember { mutableStateOf(CreatorRoute.MAIN_MENU) }
+    var showSettingsSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(editThemeId) {
-        if (editThemeId != null) {
-            val theme = viewModel.getThemeById(editThemeId)
-            if (theme != null) {
-                name = theme.meta.name
-                author = theme.meta.author
-                selectedColorHex = theme.global.highlightColor ?: "#3DDA82"
-                viewModel.loadThemeForEditing(editThemeId)
-            }
-        } else {
-            viewModel.clearCreatorState()
-        }
+        if (editThemeId != null) viewModel.loadThemeForEditing(editThemeId)
+        else viewModel.clearCreatorState()
     }
 
-    val presetColors = listOf("#3DDA82", "#FF3B30", "#007AFF", "#FF9500", "#5856D6", "#FF2D55", "#5AC8FA", "#FFCC00", "#8E8E93", "#FFFFFF")
+    BackHandler(enabled = currentRoute != CreatorRoute.MAIN_MENU) {
+        currentRoute = CreatorRoute.MAIN_MENU
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (editThemeId == null) stringResource(R.string.creator_title) else "Edit Theme") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-                .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Live Preview
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                title = {
                     Text(
-                        stringResource(R.string.creator_preview),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = when(currentRoute) {
+                            CreatorRoute.MAIN_MENU -> if (editThemeId == null) stringResource(R.string.creator_title_new) else stringResource(R.string.creator_title_edit)
+                            CreatorRoute.COLORS -> stringResource(R.string.creator_nav_colors)
+                            CreatorRoute.ICONS -> stringResource(R.string.creator_nav_icons)
+                            CreatorRoute.CALLS -> stringResource(R.string.creator_nav_calls)
+                            CreatorRoute.APPS -> stringResource(R.string.creator_nav_apps)
+                        },
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .height(44.dp)
-                            .width(180.dp)
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(Color.Black)
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha=0.2f), RoundedCornerShape(22.dp)),
-                        contentAlignment = Alignment.CenterStart
+                },
+                navigationIcon = {
+                    FilledTonalIconButton(
+                        onClick = onBack,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(safeParseColor(selectedColorHex).copy(alpha = 0.2f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Palette,
-                                    contentDescription = null,
-                                    tint = safeParseColor(selectedColorHex),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Box(modifier = Modifier.height(6.dp).width(60.dp).background(Color.White, CircleShape))
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Box(modifier = Modifier.height(6.dp).width(40.dp).background(Color.Gray, CircleShape))
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Inputs
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it; isError = false },
-                label = { Text(stringResource(R.string.creator_label_name)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-            )
-
-            OutlinedTextField(
-                value = author,
-                onValueChange = { author = it; isError = false },
-                label = { Text(stringResource(R.string.creator_label_author)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-            )
-
-            // Color Picker
-            Column {
-                Text(
-                    text = stringResource(R.string.creator_label_color),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 48.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(120.dp)
-                ) {
-                    items(presetColors) { hex ->
-                        val isSelected = selectedColorHex.equals(hex, ignoreCase = true)
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(safeParseColor(hex))
-                                .clickable { selectedColorHex = hex }
-                                .then(
-                                    if (isSelected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                    else Modifier
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isSelected) {
-                                val c = safeParseColor(hex)
-                                val brightness = (0.299*c.red + 0.587*c.green + 0.114*c.blue)
-                                val iconColor = if (brightness > 0.5) Color.Black else Color.White
-                                Icon(Icons.Rounded.Check, null, tint = iconColor)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Asset Picker
-            Column {
-                Text(
-                    text = "Global Assets",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    AssetPickerButton(
-                        label = "Nav Start",
-                        icon = Icons.Rounded.Navigation,
-                        onImageSelected = { uri -> viewModel.stageAsset("nav_start", uri) }
-                    )
-                    AssetPickerButton(
-                        label = "Nav End",
-                        icon = Icons.Rounded.Flag,
-                        onImageSelected = { uri -> viewModel.stageAsset("nav_end", uri) }
-                    )
-                    AssetPickerButton(
-                        label = "Success",
-                        icon = Icons.Rounded.CheckCircle,
-                        onImageSelected = { uri -> viewModel.stageAsset("tick_icon", uri) }
-                    )
-                }
-            }
-
-            HorizontalDivider() // [FIX] Replaced Divider
-
-            // App Overrides List
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("App Specifics", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = { showAppPicker = true; editingPkg = null }) {
-                    Icon(Icons.Rounded.Add, null)
-                    Text("Add App")
-                }
-            }
-
-            if (appOverrides.isEmpty()) {
-                Text("No app overrides configured.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                appOverrides.forEach { (pkg, override) ->
-                    val label = installedApps.find { it.packageName == pkg }?.label ?: pkg
-                    AppOverrideItem(
-                        label = label,
-                        override = override,
-                        onEdit = { editingPkg = pkg; showAppPicker = true },
-                        onDelete = { viewModel.removeAppOverride(pkg) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    if (name.isBlank() || author.isBlank()) {
-                        isError = true
-                    } else {
-                        viewModel.saveTheme(editThemeId, name, author, selectedColorHex)
-                        onThemeCreated()
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp).padding(bottom = 24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(
-                    text = if (isError) stringResource(R.string.creator_err_inputs) else stringResource(R.string.creator_btn_save),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                actions = {
+                    Button(
+                        onClick = {
+                            viewModel.saveTheme(editThemeId)
+                            onThemeCreated()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text(stringResource(R.string.creator_action_save), fontWeight = FontWeight.Bold)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            AnimatedContent(
+                targetState = currentRoute,
+                transitionSpec = {
+                    if (targetState == CreatorRoute.MAIN_MENU) {
+                        slideInHorizontally { -it } + fadeIn() togetherWith slideOutHorizontally { it } + fadeOut()
+                    } else {
+                        slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut()
+                    }
+                },
+                label = "CreatorNav"
+            ) { route ->
+                when (route) {
+                    CreatorRoute.MAIN_MENU -> CreatorMainList(
+                        viewModel = viewModel,
+                        onNavigate = { currentRoute = it },
+                        onEditSettings = { showSettingsSheet = true }
+                    )
+
+                    CreatorRoute.COLORS -> DetailScreenShell(
+                        previewContent = { ThemeCarouselPreview(viewModel) },
+                        content = { ColorsDetailContent(viewModel) }
+                    )
+
+                    CreatorRoute.ICONS -> DetailScreenShell(
+                        previewContent = { IconsSpecificPreview(viewModel) },
+                        content = { IconsDetailContent(viewModel) }
+                    )
+
+                    CreatorRoute.CALLS -> DetailScreenShell(
+                        previewContent = { CallSpecificPreview(viewModel) },
+                        content = { CallStyleSheetContent(viewModel) }
+                    )
+
+                    CreatorRoute.APPS -> DetailScreenShell(
+                        previewContent = { ThemeCarouselPreview(viewModel) },
+                        content = { AppsDetailContent(viewModel) }
+                    )
+                }
             }
         }
-    }
 
-    if (showAppPicker) {
-        val initialOverride = if (editingPkg != null) appOverrides[editingPkg] else null
-
-        AppConfigSheet(
-            initialOverride = initialOverride,
-            installedApps = installedApps,
-            onDismiss = { showAppPicker = false },
-            onSave = { pkg, override ->
-                viewModel.updateAppOverride(pkg, override)
-                showAppPicker = false
-            },
-            onStageAsset = { key, uri -> viewModel.stageAsset(key, uri) }
-        )
+        if (showSettingsSheet) {
+            ThemeMetadataSheet(viewModel) { showSettingsSheet = false }
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppConfigSheet(
-    initialOverride: AppThemeOverride?,
-    installedApps: List<AppItem>,
-    onDismiss: () -> Unit,
-    onSave: (String, AppThemeOverride) -> Unit,
-    onStageAsset: (String, Uri) -> Unit
+private fun CreatorMainList(
+    viewModel: ThemeViewModel,
+    onNavigate: (CreatorRoute) -> Unit,
+    onEditSettings: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedApp by remember { mutableStateOf<AppItem?>(null) }
-    var highlightColor by remember { mutableStateOf(initialOverride?.highlightColor ?: "") }
-    var actions by remember { mutableStateOf(initialOverride?.actions ?: emptyMap()) }
-    var newKeyword by remember { mutableStateOf("") }
-
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
-        Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
-            Text("Configure App", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(16.dp))
-
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-                OutlinedTextField(
-                    value = selectedApp?.label ?: "Select App",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("App") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth() // [FIX] Added Type
-                )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    installedApps.forEach { app ->
-                        DropdownMenuItem(
-                            text = { Text(app.label) },
-                            onClick = { selectedApp = app; expanded = false }
-                        )
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.35f),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainer
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = 24.dp)) {
+                    ThemeCarouselPreview(viewModel)
                 }
             }
+        }
 
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(value = highlightColor, onValueChange = { highlightColor = it }, label = { Text("Highlight Color (Hex)") }, modifier = Modifier.fillMaxWidth())
-
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider() // [FIX] Replaced Divider
-            Spacer(Modifier.height(16.dp))
-
-            Text("Custom Actions", style = MaterialTheme.typography.titleMedium)
-            Text("Replace icons for buttons containing text.", style = MaterialTheme.typography.bodySmall)
+        Column(
+            modifier = Modifier
+                .weight(0.65f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             Spacer(Modifier.height(8.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(value = newKeyword, onValueChange = { newKeyword = it }, label = { Text("Keyword (e.g. Reply)") }, modifier = Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                AssetPickerButton("", Icons.Rounded.Image) { uri ->
-                    if (newKeyword.isNotBlank() && selectedApp != null) {
-                        val pkg = selectedApp!!.packageName
-                        val fileKey = "${pkg}_${newKeyword.lowercase()}_icon"
-                        onStageAsset(fileKey, uri)
-                        val newConfig = ActionConfig(icon = ThemeResource(ResourceType.LOCAL_FILE, "icons/$fileKey.png"))
-                        actions = actions + (newKeyword to newConfig)
-                        newKeyword = ""
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            actions.forEach { (keyword, _) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp)).padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Rounded.Check, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Button containing '$keyword'", modifier = Modifier.weight(1f))
-                    IconButton(onClick = { actions = actions - keyword }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Rounded.Close, null, modifier = Modifier.size(16.dp))
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
             Button(
-                onClick = {
-                    selectedApp?.let {
-                        val override = AppThemeOverride(
-                            highlightColor = highlightColor.ifBlank { null },
-                            actions = actions.ifEmpty { null }
+                onClick = onEditSettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            ) {
+                Icon(Icons.Outlined.Edit, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.creator_btn_edit_info))
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            val menuItems = listOf(
+                CreatorRoute.COLORS,
+                CreatorRoute.ICONS,
+                CreatorRoute.CALLS,
+                CreatorRoute.APPS
+            )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                menuItems.forEachIndexed { index, route ->
+                    val shape = getExpressiveShape(menuItems.size, index, ShapeStyle.Large)
+
+                    when(route) {
+                        CreatorRoute.COLORS -> CreatorOptionCard(
+                            title = stringResource(R.string.creator_nav_colors),
+                            subtitle = stringResource(R.string.creator_sub_colors),
+                            icon = Icons.Outlined.ColorLens,
+                            shape = shape,
+                            onClick = { onNavigate(route) },
+                            trailingContent = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(safeParseColor(viewModel.selectedColorHex))
+                                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                                )
+                            }
                         )
-                        onSave(it.packageName, override)
+                        CreatorRoute.ICONS -> CreatorOptionCard(
+                            title = stringResource(R.string.creator_nav_icons),
+                            subtitle = stringResource(R.string.creator_sub_icons),
+                            icon = Icons.Outlined.Widgets,
+                            shape = shape,
+                            onClick = { onNavigate(route) },
+                            trailingContent = {
+                                Icon(Icons.Outlined.Image, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                            }
+                        )
+                        CreatorRoute.CALLS -> CreatorOptionCard(
+                            title = stringResource(R.string.creator_nav_calls),
+                            subtitle = stringResource(R.string.creator_sub_calls),
+                            icon = Icons.Outlined.Call,
+                            shape = shape,
+                            onClick = { onNavigate(route) }
+                        )
+                        CreatorRoute.APPS -> CreatorOptionCard(
+                            title = stringResource(R.string.creator_nav_apps),
+                            subtitle = stringResource(R.string.creator_sub_apps),
+                            icon = Icons.Outlined.Apps,
+                            shape = shape,
+                            onClick = { onNavigate(route) }
+                        )
+                        else -> {}
                     }
-                },
-                enabled = selectedApp != null,
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-            ) { Text("Save Configuration") }
+                }
+            }
+
             Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun AppOverrideItem(label: String, override: AppThemeOverride, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun CreatorOptionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    shape: Shape,
+    onClick: () -> Unit,
+    trailingContent: (@Composable () -> Unit)? = null
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        shape = shape,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 88.dp)
     ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(20.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.titleMedium)
-                val color = override.highlightColor ?: "Default Color"
-                val count = override.actions?.size ?: 0
-                Text("$color • $count custom actions", style = MaterialTheme.typography.bodySmall)
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            IconButton(onClick = onDelete) { Icon(Icons.Rounded.Delete, null) }
+            if (trailingContent != null) {
+                trailingContent()
+            } else {
+                Icon(Icons.AutoMirrored.Rounded.ArrowForwardIos, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+            }
         }
     }
 }
 
 @Composable
-fun AssetPickerButton(label: String, icon: ImageVector, onImageSelected: (Uri) -> Unit) {
-    var hasSelected by remember { mutableStateOf(false) }
-    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) { onImageSelected(uri); hasSelected = true }
-    }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        FilledTonalIconButton(
-            onClick = { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = if (hasSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh),
-            modifier = Modifier.size(56.dp)
+private fun DetailScreenShell(
+    previewContent: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(260.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = if(hasSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainer
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(vertical = 24.dp)
+                ) {
+                    previewContent()
+                }
+            }
         }
-        if (label.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall)
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            content()
         }
     }
 }
 
-private fun safeParseColor(hex: String): Color {
-    return try { Color(hex.toColorInt()) } catch (e: Exception) { Color.White }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ThemeMetadataSheet(viewModel: ThemeViewModel, onDismiss: () -> Unit) {
+    val fm = LocalFocusManager.current
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.padding(24.dp).navigationBarsPadding()) {
+            Text(stringResource(R.string.meta_title), style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(24.dp))
+            OutlinedTextField(
+                value = viewModel.themeName,
+                onValueChange = { viewModel.themeName = it },
+                label = { Text(stringResource(R.string.meta_label_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardActions = KeyboardActions(onDone = { fm.clearFocus() })
+            )
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = viewModel.themeAuthor,
+                onValueChange = { viewModel.themeAuthor = it },
+                label = { Text(stringResource(R.string.meta_label_author)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardActions = KeyboardActions(onDone = { fm.clearFocus() })
+            )
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text(stringResource(R.string.meta_action_done))
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+sealed class ShapeStyle(
+    val topRadius: Dp,
+    val bottomRadius: Dp
+) {
+    data object None : ShapeStyle(topRadius = 0.dp, bottomRadius = 0.dp)
+    data object ExtraSmall : ShapeStyle(topRadius = 2.dp, bottomRadius = 1.dp)
+    data object Small : ShapeStyle(topRadius = 4.dp, bottomRadius = 2.dp)
+    data object Medium : ShapeStyle(topRadius = 15.dp, bottomRadius = 5.dp)
+    data object Large : ShapeStyle(topRadius = 24.dp, bottomRadius = 4.dp)
+    data object ExtraLarge : ShapeStyle(topRadius = 48.dp, bottomRadius = 16.dp)
+}
+
+fun getExpressiveShape(
+    groupSize: Int,
+    index: Int,
+    style: ShapeStyle = ShapeStyle.Large
+): Shape {
+    if (groupSize <= 1) return RoundedCornerShape(style.topRadius)
+
+    val large = style.topRadius
+    val small = style.bottomRadius
+
+    return when (index) {
+        0 -> RoundedCornerShape(
+            topStart = large,
+            topEnd = large,
+            bottomEnd = small,
+            bottomStart = small
+        )
+        groupSize - 1 -> RoundedCornerShape(
+            topStart = small,
+            topEnd = small,
+            bottomEnd = large,
+            bottomStart = large
+        )
+        else -> RoundedCornerShape(small)
+    }
 }

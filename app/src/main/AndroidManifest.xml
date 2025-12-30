@@ -72,7 +72,7 @@
         <activity
             android:name=".ui.screens.theme.ThemeInstallerActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Dialog"
+            android:theme="@style/Theme.HyperBridge.Transparent"
             android:excludeFromRecents="true">
 
             <intent-filter>

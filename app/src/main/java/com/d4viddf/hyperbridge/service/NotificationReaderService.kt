@@ -367,18 +367,13 @@ class NotificationReaderService : NotificationListenerService() {
             val appIslandConfig = preferences.getAppIslandConfig(sbn.packageName).first()
             val globalConfig = preferences.globalConfigFlow.first()
 
-            // E. Inject Theme Highlight Color into Configuration
-            // [FIXED] Removed invalid reference to globalConfig.highlightColor
-            val themeHighlight = themeRepository.getHighlightColor(sbn.packageName, "#000000")
-
-            // Create a config that includes the theme's highlight color logic
-            // (Assumes globalConfig handles highlight, or we simply effectively use it)
+            // Merge configs (Island behavior config, NOT theme style)
             val finalConfig = appIslandConfig.mergeWith(globalConfig)
 
             val bridgeId = sbn.key.hashCode()
             val picKey = "pic_${bridgeId}"
 
-            // [UPDATED] Pass 'activeTheme' to Translators
+            // [CRITICAL UPDATE] Pass 'activeTheme' to all Translators
             val data: HyperIslandData = when (type) {
                 NotificationType.CALL -> callTranslator.translate(sbn, picKey, finalConfig, activeTheme)
                 NotificationType.NAVIGATION -> {
@@ -387,8 +382,7 @@ class NotificationReaderService : NotificationListenerService() {
                 }
                 NotificationType.TIMER -> timerTranslator.translate(sbn, picKey, finalConfig, activeTheme)
                 NotificationType.PROGRESS -> progressTranslator.translate(sbn, effectiveTitle, picKey, finalConfig, activeTheme)
-                NotificationType.MEDIA -> mediaTranslator.translate(sbn, picKey, finalConfig)
-                // [UPDATED] Pass effectiveTitle AND effectiveText
+                NotificationType.MEDIA -> mediaTranslator.translate(sbn, picKey, finalConfig) // Media usually keeps its own art
                 else -> standardTranslator.translate(sbn, effectiveTitle, effectiveText, picKey, finalConfig, activeTheme)
             }
 
