@@ -1,0 +1,403 @@
+<resources>
+		<string name="app_name">Hyper Bridge</string>
+
+		<string name="back">Natrag</string>
+		<string name="next">Dalje</string>
+		<string name="finish">Gotovo</string>
+		<string name="done">Gotovo</string>
+		<string name="logo_desc">Logo</string>
+		<string name="settings">Postavke</string>
+		<string name="info">Inform.</string>
+		<string name="configure">Konfiguriraj</string>
+		<string name="clear">Izbriši</string>
+		<string name="sort_order">Redoslijed sortiranja</string>
+
+		<string name="welcome_title">Dobrodošli u\nHyper Bridge</string>
+		<string name="welcome_subtitle">Besprijekorno integrirajte HyperIslands u svoje HyperOS iskustvo.</string>
+		<string name="get_started">Započnite</string>
+
+		<string name="how_it_works">Kako funkcionira</string>
+		<string name="how_it_works_desc">Odaberite svoje omiljene aplikacije (Spotify, Karte, Timer). HyperBridge pretvara njihove obavijesti u elegantni HyperIsland.</string>
+		<string name="early_development">Rani razvoj</string>
+		<string name="beta_warning">Napomena: Ova je aplikacija u beta fazi. Moguće su greške ili netočne vizualne informacije..</string>
+
+		<string name="device_compatible">Kompatibilni uređaj</string>
+		<string name="unsupported_device">Nepodržani uređaj</string>
+		<string name="compatible_msg">Čini se da vaš uređaj koristi HyperOS/MIUI. Spremni ste!</string>
+		<string name="incompatible_msg">HyperBridge se oslanja na specifične značajke HyperOS sustava. Čini se da proizvođač vašeg uređaja nije Xiaomi/POCO/Redmi..</string>
+		<string name="system_detected">✅ Sustav otkriven</string>
+		<string name="app_wont_work">⚠️ Aplikacija možda neće raditi</string>
+
+		<string name="show_island">Prikaži Otok</string>
+		<string name="perm_post_desc">Trebamo dopuštenje za objavljivanje obavijesti \'Otok\' na vašem zaslonu.</string>
+		<string name="perm_granted">Dopuštenje odobreno</string>
+		<string name="allow_notifications">Dopusti obavijesti</string>
+
+		<string name="read_data">Čitanje podataka</string>
+		<string name="perm_listener_desc">Za povezivanje vaših aplikacija, moramo čitati njihove obavijesti (Glazba, Karte, Tajmeri).</string>
+		<string name="open_settings">Otvori Postavke</string>
+
+		<string name="keep_alive">Drži aktivno</string>
+		<string name="optimization_desc">HyperOS ukida pozadinske aplikacije. Omogućite automatsko pokretanje i Bez ograničenja kako bi Otok ostao aktivan.</string>
+		<string name="enable_autostart">1. Omogućite automatsko pokretanje</string>
+		<string name="set_battery_no_restrictions">2. Postavite bateriju na \'Bez ograničenja\'</string>
+
+		 <string name="tab_active">Aktivno</string>
+		 <string name="tab_library">Knjižnica</string>
+		 <string name="title_active_bridges">Aktivni mostovi</string>
+		 <string name="title_library">Knjižnica aplikacija</string>
+		 <string name="search_hint">Pretraži aplikacije...</string>
+		 <string name="sort_az">Sortiraj: A-Z</string>
+		 <string name="sort_za">Sortiraj: Z-A</string>
+
+	   <string name="no_active_bridges">Nema aktivnih mostova</string>
+	   <string name="no_active_bridges_desc">Idite u Knjižnicu da biste omogućili aplikacije.</string>
+	   <string name="no_apps_found">Nisu pronađene aplikacije</string>
+
+		<string name="about">O aplikaciji</string>
+		<string name="version_template">Verzija %s</string>
+		<string name="developer_credit">by D4vidDf</string>
+
+		<string name="group_configuration">Konfiguracija</string>
+		<string name="system_setup">Postavljanje sustava</string>
+		<string name="system_setup_subtitle">Popravak dopuštenja &amp; baterije</string>
+
+		<string name="group_about">O nama</string>
+		<string name="developer">Razvojni programer</string>
+		<string name="developer_subtitle">Posjetite d4viddf.com</string>
+		<string name="source_code">Izvorni kod</string>
+		<string name="source_code_subtitle">GitHub repozitorij</string>
+		<string name="licenses">Licence otvorenog koda</string>
+		<string name="licenses_subtitle">Softver trećih strana</string>
+		<string name="footer_made_with_love">Izrađeno s ❤️ u Španjolskoj</string>
+
+		<string name="app_health">Zdravlje aplikacije</string>
+		<string name="app_health_desc">Provjerite jesu li sve oznake zelene kako bi aplikacija ispravno radila u pozadini.</string>
+		<string name="req_permissions">Potrebna dopuštenja</string>
+		<string name="notif_access">Pristup obavijestima</string>
+		<string name="notif_access_desc">Potrebno za čitanje događaja aplikacije</string>
+		<string name="perm_display_desc">Dopuštenje za prikaz preko aplikacija</string>
+		<string name="device_optimization">Optimizacija uređaja</string>
+		<string name="xiaomi_autostart">Xiaomi automatsko pokretanje</string>
+		<string name="autostart_desc">Dopustite aplikaciji pokretanje pri pokretanju</string>
+		<string name="battery_unrestricted">Bez ograničenja</string>
+		<string name="battery_desc">Spriječite zaustavljanje aplikacije od strane sustava</string>
+		<string name="recents_note">Napomena: Također zaključajte aplikaciju u \'Nedavno\'.</string>
+		<string name="status_active">Aktivno</string>
+		<string name="action_needed">Potrebna radnja</string>
+
+		<string name="cat_all">Sve</string>
+		<string name="cat_music">Glazba</string>
+		<string name="cat_nav">Navigacija</string>
+		<string name="cat_timer">Produktivnost</string>
+		<string name="cat_other">Ostalo</string>
+
+		<string name="select_active_notifs">Odaberi aktivne obavijesti</string>
+		<string name="type_standard">Poruke &amp; općenito</string>
+		<string name="type_progress">Preuzimanja &amp; napredak</string>
+		<string name="type_media">Glazba &amp; mediji</string>
+		<string name="type_nav">Karte &amp; GPS</string>
+		<string name="type_call">Pozivi</string>
+		<string name="type_timer">Timer &amp; Alarmi</string>
+
+		<string name="service_active">Aktivno</string>
+		<string name="download_complete">Preuzimanje dovršeno</string>
+		<string name="pending">Na čekanju…</string>
+		<string name="finished">Završeno</string>
+		<string name="downloading">Preuzimanje</string>
+		<string name="waiting">Čekanje…</string>
+		<string name="now_playing">Sada se reproducira</string>
+		<string name="unknown_caller">Nepoznati pozivatelj</string>
+		<string name="incoming_call">Poziv</string>
+		<string name="maps_title">Karte</string>
+		<string name="timer_title">Timer</string>
+
+    <string-array name="progress_finish_keywords">
+        <item>downloaded</item>
+        <item>completed</item>
+        <item>finished</item>
+        <item>installed</item>
+        <item>done</item>
+        <item>successful</item>
+        <item>succeeded</item>
+        <item>preuzeto</item>
+        <item>dovršeno</item>
+        <item>dovršeno</item>
+        <item>instalirano</item>
+		   <item>gotovo</item>
+    </string-array>
+
+		<string name="status_download_complete">Preuzimanje dovršeno</string>
+		<string name="status_downloading">Preuzimanje</string>
+		<string name="status_pending">Na čekanju...</string>
+		<string name="status_finished">Završeno</string>
+		<string name="status_now_playing">Sada se reproducira</string>
+		<string name="status_incoming_call">Dolazni poziv</string>
+		<string name="caller_unknown">Nepoznati pozivatelj</string>
+
+		<string name="fallback_maps">Karte</string>
+		<string name="fallback_timer">Timer</string>
+		<string name="fallback_stopwatch">Štoperica</string>
+
+		<string name="whats_new_title">Što je novo u %s</string>
+		<string name="awesome">Odlično!</string>
+
+		<string name="island_behavior">Ponašanje Otoka</string>
+		<string name="limit_strategy">Strategija ograničenja</string>
+		<string name="limit_desc">Što se događa kada dođete do 9 otoka?</string>
+		<string name="mode_fcfs_title">Tko prvi dođe, njemu se daje</string>
+		<string name="mode_fcfs_desc">Zadržava prvih 9 aplikacija. Nove aplikacije se ignoriraju dok se ne oslobodi prostor.</string>
+		<string name="mode_recent_title">Najnovije (zadano)</string>
+		<string name="mode_recent_desc">Nove obavijesti zamjenjuju najstarije.</string>
+		<string name="mode_priority_title">Prilagođeni prioritet</string>
+		<string name="mode_priority_desc">Definirajte koje su vrste (npr. pozivi) važnije.</string>
+		<string name="priority_order">Redoslijed prioriteta</string>
+		<string name="priority_order_desc">Visoki prioritet (vrh) zamjenjuje Niski prioritet (dno).</string>
+		<string name="move_up">Premjesti gore</string>
+		<string name="move_down">Premjesti dolje</string>
+		<string name="configure_order">Konfiguriraj redoslijed aplikacija</string>
+
+		<string name="global_settings">Globalne postavke</string>
+		<string name="island_appearance">Izgled Otoka</string>
+		<string name="setting_float">Skočni prozor s upozorenjem</string>
+		<string name="setting_float_desc">Prikaži cijeli banner obavijesti nakratko prije minimiziranja na Otok.</string>
+
+		<string name="setting_shade">Planel obavijesti</string>
+		<string name="setting_shade_desc">Održavaj obavijest vidljivom u sustavu. Ako je onemogućeno, prikazuje se samo kao Otok.</string>
+
+		<string name="setting_timeout">Odgoda automatskog minimiziranja</string>
+		<string name="seconds_suffix">%ds</string>
+
+		<string name="use_global_default">Koristi globalne zadane postavke</string>
+		<string name="customize_app">Prilagodi</string>
+		<string name="override_settings">Nadjačaj postavke</string>
+
+		<string-array name="nav_arrival_keywords">
+		<item>dolazak</item>
+		<item>dolazak</item>
+		<item>očekivano vrijeme dolaska</item>
+		<item>dolazak</item>
+		<item>odredište</item>		
+		</string-array>
+		
+		<string name="hint_options">Opcije</string>
+
+		<string name="version_history">Povijest verzija</string>
+
+		<string name="title_0_2_0">Informacije o ažuriranjima</string>
+		<string name="changelog_0_2_0">
+		• <b>Napredni napredak:</b> Dodana je podrška za "Korak napretka" (npr. 1 od 3) i trake napretka s ikonama unutar zaslona obavijesti.\n
+		• <b>Sustav prioriteta:</b> Nove postavke "Ponašanje otoka". Odaberite između "Najnovije", "Tko prvi dođe" ili prilagođenog popisa "Prioritet aplikacije".\n
+		• <b>Pametno filtriranje:</b> Poboljšano otkrivanje dupliciranih obavijesti i grupiranih preuzimanja.\n
+		• <b>Vizualna poboljšanja:</b> Ispravljeni problemi s izgledom uputa za navigaciju.\n
+		• <b>Konfiguracija po aplikaciji:</b> Prilagodite ponašanje vremenskog ograničenja i lebdenja po aplikaciji.</string>
+
+		<string name="title_0_1_0">Izražajno ažuriranje</string>
+		<string name="changelog_0_1_0">
+		• <b>Velika izmjena korisničkog sučelja:</b> Novi materijal 3 Izražajniji dizajn s glatkim animacijama.\n
+		• <b>Bolji otok:</b> Tekst se sada prikazuje s desne strane. Dodana je zelena kvačica za dovršena preuzimanja.\n
+		• <b>Konfiguracija po aplikaciji:</b> Odaberite određene vrste obavijesti (glazba, karte, pozivi) po aplikaciji.\n
+		• <b>Pametni filtri:</b> Blokira duplicirane obavijesti i štedi bateriju.\n
+		• <b>Nova knjižnica:</b> Filtrira aplikacije prema kategoriji i redoslijedu sortiranja.\n
+		• <b>Lokalizacija:</b> Dodana podrška za španjolski.
+		</string>
+
+		<string name="priority_edu_title">Novo: Kontrolirajte Otok</string>
+		<string name="priority_edu_desc">HyperBridge sada može upravljati ponašanjem više obavijesti kada se dosegne ograničenje od 9 otoka.\n\n&lt;b&gt;Zadano: Najnovije&lt;/b&gt;\nNove obavijesti automatski zamjenjuju najstarije.</string>
+		<string name="keep_default">Zadrži zadano</string>
+		<string name="configure_now">Konfiguriraj sada</string>
+
+		<string name="badge_new">NOVO</string>
+
+		<string name="custom_design">Prilagođeni dizajn</string>
+		<string name="nav_layout_title">Izgled navigacije</string>
+		<string name="nav_layout_desc">Odaberite gdje će se informacije prikazivati</string>
+		<string name="left_content">Lijeva strana</string>
+		<string name="right_content">Desna strana</string>
+
+		<string name="nav_content_instruction">Upute</string>
+		<string name="nav_content_distance">Udaljenost</string>
+		<string name="nav_content_eta">Vrijeme dolaska</string>
+		<string name="nav_content_distance_eta">Udaljenost &amp; Vrijeme</string>
+		<string name="nav_content_none">Prazno</string>
+
+		<string name="channel_active_islands">Aktivni otoci</string>
+
+		<string name="cd_toggle_app">Uključi/isključi %s</string>
+		<string name="cd_configure_app">Konfiguriraj %s</string>
+		<string name="cd_enable_type">Omogući %s obavijesti</string>
+		<string name="cd_disable_type">Onemogući %s obavijesti</string>
+		<string name="cd_nav_edit">Uredi raspored navigacije</string>
+		<string name="cd_app_state_active">Aktivno</string>
+		<string name="cd_app_state_inactive">Neaktivno</string>
+
+		<string name="cd_move_up">Premjesti stavku gore</string>
+		<string name="cd_move_down">Premjesti stavku dolje</string>
+		<string name="cd_drag_handle">Povuci ručicu. Dvaput dodirnite i držite za promjenu redoslijeda ili upotrijebite radnje za pomicanje.</string>
+		<string name="cd_app_icon">Ikona aplikacije za %s</string>
+		<string name="cd_nav_preview">Pregled navigacije: %1$s lijevo, %2$s desno</string>
+		<string name="cd_expand_changelog">Proširi detalje verzije</string>
+		<string name="cd_collapse_changelog">Sakrij detalje verzije</string>
+		<string name="cd_configuration_group">Postavke konfiguracije</string>
+		<string name="cd_about_group">Informacije o aplikaciji</string>
+
+		<string name="nav_preview_instruction">Skrenite desno</string>
+		<string name="nav_preview_distance">200m</string>
+		<string name="nav_preview_time">10:30</string>
+
+		<string name="blocked_terms">Blokirani pojmovi</string>
+		<string name="blocked_terms_desc">Obavijesti koje sadrže ove pojmove riječi će biti ignorirane.</string>
+		<string name="add_blocked_word">Dodaj riječ (npr. \'Spoiler\')</string>
+		<string name="add">Dodaj</string>
+		<string name="remove">Ukloni</string>
+		<string name="tap_to_configure_rules">Dodirnite aplikaciju za konfiguriranje određenih pravila blokiranja.</string>
+		<string name="spoiler_subtitle">Upravljajte zaštitom od spojlera i filterima</string>
+
+		<string name="active_notifications_title">Vrste obavijesti</string>
+		<string name="active_notifications_subtitle">%d aktivnih</string>
+		<string name="appearance_use_defaults_desc">Korištenje zadanih postavki sustava za brzinu animacije i ponašanje plutanja.</string>
+		<string name="blocked_terms_active_count">%d aktivnih pravila</string>
+
+		<string name="global_rules">Globalna pravila</string>
+		<string name="app_specific_rules">Pravila specifična za aplikacije</string>
+		<string name="manage_app_rules_desc">Prilagodi filtere za određene aplikacije</string>
+		<string name="blocked_terms_count">%d pojmova blokirano</string>
+		<string name="no_active_rules">Nema aktivnih pravila</string>
+
+		<string name="setup_health_title">Kompatibilnost sustava</string>
+		<string name="check_device">Uređaj: %s</string>
+		<string name="check_os_version">OS: %s</string>
+		<string name="req_hyperos">Zahtijeva HyperOS 3.0+ (Android 15+)</string>
+		<string name="req_xiaomi">Potreban je uređaj Xiaomi/Redmi/Poco</string>
+		<string name="check_autostart">Automatsko pokretanje u pozadini</string>
+		<string name="check_autostart_desc">Potrebno za ponovno pokretanje usluge nakon ponovno pokretanje.</string>
+		<string name="grant_permission">Odobreno</string>
+		<string name="status_ok">Kompatibilno</string>
+		<string name="status_fail">Nekompatibilno</string>
+		<string name="status_unknown">Nepoznato</string>
+
+		<string name="warning_cn_rom_title">Otkriven kineski ROM</string>
+		<string name="warning_cn_rom_desc">Čini se da vaš uređaj koristi kineski firmware. Xiaomi značajno mijenja interne obavijesti na CN ROM-ovima. Značajke mogu biti nestabilne ili uopće neće raditi.</string>
+
+		<string name="system_version">Verzija sustava</string>
+
+		<string name="call_incoming">Dolazni poziv</string>
+		<string name="call_ongoing">Aktivni poziv</string>
+
+    <string-array name="call_keywords_hangup">
+        <item>hang</item>
+        <item>end</item>
+        <item>decline</item>
+        <item>reject</item>
+		   <item>prekinuti</item>
+        <item>kraj</item>
+        <item>odbiti</item>
+        <item>odbiti</item>
+    </string-array>
+	
+    <string-array name="call_keywords_answer">
+        <item>answer</item>
+        <item>accept</item>
+		  <item>odgovori</item>
+        <item>prihvati</item>
+    </string-array>
+	
+    <string-array name="call_keywords_speaker">
+	      <item>speaker</item>
+        <item>audio</item>
+        <item>zvučnik</item>
+        <item>audio</item>
+    </string-array>
+
+		<string name="title_0_3_0">Globalno ažuriranje</string>
+		<string name="changelog_0_3_0">
+		<b>Skrivena obavijest 👻</b>\n
+		Nova opcija za skrivanje obavijesti sa panele sustava, a istovremeno zadržavanje aktivnog Otoka. Provjerite globalne postavke!\n\n
+		<b>Novi jezici 🌍</b>\n
+		Posebna zahvala našoj zajednici na ovim prijevodima:\n
+		• 🇧🇷 portugalski (Brazil)\n
+		• 🇵🇱 poljski\n
+		• 🇰🇷 korejski\n\n
+		• 🇺🇦 ukrajinski\n\n
+		<b>Prilagodba navigacije 🧭</b>\n
+		Sada možete odabrati koje će se informacije prikazivati ​​na lijevoj i desnoj strani navigacijskog otoka (udaljenost, predviđeno vrijeme dolaska, upute).\n\n
+		<b>Zaštita od spojlera 🛡️</b>\n
+		Nova značajka "Blokirani pojmovi". Definirajte riječi globalno ili za svaku aplikaciju kako biste spriječili prikazivanje određenih obavijesti na Otoku.\n\n
+		<b>Poboljšanja poziva 📞</b>\n
+		Poboljšana logika otkrivanja za podršku šireg raspona VoIP i Dialer aplikacija.\n\n
+		<b>Ispravci i poboljšanja 🛠️</b>\n
+		• Ispravljena kritična greška gdje bi se aplikacija zaglavila pri učitavanju nakon ponovnog pokretanja.\n
+		• Ispravljene obavijesti koje ponekad prikazuju sirove nazive paketa (npr. "com.google...") umjesto sadržaja.\n
+		• Redizajniran list konfiguracije aplikacije za bolju upotrebljivost.\n
+		• Poboljšan zaslon za provjeru kompatibilnosti s detaljnim informacijama o uređaju.
+		</string>
+
+		<string name="privacy_title">100% izvan mreže i sigurno</string>
+		<string name="privacy_desc">Hyper Bridge obrađuje sve izravno na procesoru vašeg telefona.\n\nNE zahtijeva pristup internetu, što znači da vaše obavijesti i osobni podaci nikada ne napuštaju vaš uređaj.</string>
+
+		<string name="language">Jezik</string>
+		<string name="language_desc">Promijeni jezik aplikacije</string>
+		<string name="system_default">Zadane postavke sustava</string>
+		<string name="save">Spremi</string>
+
+		<string name="backup_restore_title">Sigurnosna kopija i Vraćanje</string>
+		<string name="backup_section_title">Upravljanje podacima</string>
+		<string name="backup_options_subtitle">Odaberite podatke koje želite uključiti u operaciju</string>
+
+		<string name="option_app_settings">Postavke aplikacije</string>
+		<string name="option_app_settings_desc">Postavljanje statusa, teme, načina ponašanja</string>
+
+		<string name="option_blocklist">Baza podataka popisa blokiranih</string>
+		<string name="option_blocklist_desc">Vaše prilagođene blokirane ključne riječi i aplikacije</string>
+
+		<string name="option_priorities">Pravila prioriteta</string>
+		<string name="option_priorities_desc">Konfiguracije prilagođenog prioriteta obavijesti</string>
+
+		<string name="action_export">Izrada sigurnosne kopije</string>
+		<string name="action_import">Vraćanje sigurnosne kopije</string>
+
+		<string name="export_success">Sigurnosna kopija uspješno spremljena</string>
+		<string name="export_failed">Izvoz nije uspio: %s</string>
+		<string name="import_success">Podaci uspješno vraćeni</string>
+		<string name="import_failed">Uvoz nije uspio: %s</string>
+		<string name="invalid_backup_file">Nevažeća datoteka sigurnosne kopije HyperBridgea</string>
+		<string name="db_version_mismatch">Upozorenje: Sigurnosna kopija iz druge verzije baze podataka</string>
+
+		<string name="autostart_manual_check">Status se ne može automatski provjeriti.\nMolimo provjerite ručno kako biste osigurali da usluga ispravno radi</string>
+
+		<string name="backup_info_title">Informacije o sigurnosnoj kopiji</string>
+		<string name="backup_meta_date">Datum</string>
+		<string name="backup_meta_device">Uređaj</string>
+		<string name="backup_meta_version">Verzija</string>
+		<string name="backup_meta_keys">Ukupno stavki</string>
+		<string name="backup_empty_suffix"> (Prazno)</string>
+		<string name="action_restore_selected">Vrati odabrano Podaci</string>
+
+		<string name="optimization_title">Optimizacija uređaja</string>
+		<string name="no_restrictions">Postavite "Bez ograničenja"</string>
+
+		<string name="privacy_card_title">Prvo izvanmrežno</string>
+		<string name="privacy_card_desc">Nije potrebna internetska veza.</string>
+
+		<string name="title_0_3_1">Sigurnosna kopija i ažuriranje poliglota</string>
+		<string name="changelog_0_3_1">
+		<b>Sigurnosna kopija i vraćanje 📦</b>\n
+		Nova značajka za napredne korisnike! Sigurno izvezite svoje postavke, popise blokiranih i prioritete aplikacija u .hbr datoteku i vratite ih u bilo kojem trenutku.\n\n
+		<b>Novi jezici 🌍</b>\n
+		Dodana podrška za:\n
+		• 🇩🇪 njemački\n
+		• 🇷🇺 ruski\n
+		• 🇺🇦 ukrajinski (poboljšano)\n
+		<i>Plus: Novi alat za odabir jezika u aplikaciji za promjenu jezika bez utjecaja na postavke sustava.</i>\n\n
+		<b>Vizualno osvježenje 🎨</b>\n
+		Aplikacija je ažurirana s <b>Material 3 Expressive</b> dizajnom. Uživajte u većim zaglavljima, zaobljenijim oblicima i glatkijem iskustvu.\n\n
+		<b>Privatnost i postavljanje 🛡️</b>\n
+		• Poboljšana integracija s posebnom stranicom za privatnost koja pojašnjava arhitekturu koja je prvenstveno usmjerena na offline rad.\n
+		• Strože provjere kompatibilnosti kako bi se osiguralo najbolje iskustvo na HyperOS-u 3.0.\n\n
+		<b>Ispravci 🛠️</b>\n
+		• Ispravljen kritičan problem gubitka postavki nakon ponovnog pokretanja uređaja (migrirano u bazu podataka).\n
+		• Ispravljena tipka "Izlaz" u navigacijskom otoku koji se prikazuje kao ikona umjesto teksta.\n
+		• Ispravljeno učitavanje ikone aplikacije u Postavkama.\n
+		</string>
+
+</resources>
